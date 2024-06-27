@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import { createVenda, deleteVenda, selectVenda } from './controller/VendaController';
 
 dotenv.config();
 
@@ -9,22 +10,22 @@ app.use(cors({origin:"*"}));
 app.use(express.json());
 const port = process.env.SERVICE_PORT;
 
-app.post('/Produto', async (req: Request, res: Response) => {
-    const produto = req.body;
-    //const response = await createProduto(produto);
-    //return res.status(response.status).json({msg:response.msg});
+app.post('/Venda', async (req: Request, res: Response) => {
+    const venda = req.body;
+    const response = await createVenda(venda);
+    return res.status(response.status).json({msg:response.msg});
 });
 
-app.delete('/Produto', async (req: Request, res: Response) => {
+app.delete('/Venda', async (req: Request, res: Response) => {
     const id = req.query.id as string;
-    //const response = await deleteProduto(parseInt(id));
-    //return res.status(response.status).json({msg:response.msg});
+    const response = await deleteVenda(parseInt(id), true);
+    return res.status(response.status).json({msg:response.msg});
 });
 
-app.get('/Produto', async (req: Request, res: Response) => {
+app.get('/Venda', async (req: Request, res: Response) => {
     const id = req.query.id as string;
-    //const response = await selectProduto(parseInt(id));
-    //return res.status(200).json(response);
+    const response = await selectVenda(parseInt(id));
+    return res.status(200).json(response);
 });
 
 app.listen(port, () => {
