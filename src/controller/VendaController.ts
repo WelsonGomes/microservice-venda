@@ -22,7 +22,7 @@ async function createVenda(venda: VendaDTO): Promise<{status: number, msg: strin
                 throw new Error('Houve uma falha ao processar a venda.');
             }
             try {
-                const produtoResp = await axios.put("http://localhost:3001/Produto", {
+                const produtoResp = await axios.put("http://54.200.107.107:3001/Produto", {
                     id: novo.produtoid,
                     qtd: novo.qtdade,
                     op: 'subtrair'
@@ -65,7 +65,7 @@ async function deleteVenda(id: number, valor: boolean): Promise<{status: number,
             await prismaTransaction.venda.update({ where: { id: id }, data: { cancelada: valor }});
             
             try {
-                const produtoResp = await axios.put("http://localhost:3001/Produto", {
+                const produtoResp = await axios.put("http://54.200.107.107:3001/Produto", {
                     id: response.produtoid,
                     qtd: response.qtdade,
                     op: 'soma'
