@@ -13,13 +13,15 @@ const port = process.env.SERVICE_PORT;
 app.post('/Venda', async (req: Request, res: Response) => {
     const venda = req.body;
     const response = await createVenda(venda);
+    console.log(response.msg)
     return res.status(response.status).json({msg:response.msg});
 });
 
 app.delete('/Venda', async (req: Request, res: Response) => {
     const id = req.query.id as string;
     const response = await deleteVenda(parseInt(id), true);
-    return res.status(response.status).json({msg:response.msg});
+    console.log('Venda cancelada')
+    return res.status(response.status).json({msg:response});
 });
 
 app.get('/Venda', async (req: Request, res: Response) => {

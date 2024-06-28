@@ -27,16 +27,16 @@ async function createVenda(venda: VendaDTO): Promise<{status: number, msg: strin
     };
 };
 
-async function deleteVenda(id: number, valor: boolean): Promise<{status: number, msg: string}> {
+async function deleteVenda(id: number, valor: boolean): Promise<{status: number, msg: string, produtoid: number, qtd: number}> {
     try {
         const result = await prisma.$transaction(async (prismaTransacition) => {
-            await prismaTransacition.venda.update({ where: { id: id }, data: { cancelada: valor} });
-            return {status: 200, msg: 'Venda cancelada.'};
+            const response = await prismaTransacition.venda.update({ where: { id: id }, data: { cancelada: valor} });
+            return {status: 200, msg: 'Venda cancelada.', produtoid: response.produtoid, qtd: response.qtdade};
         });
         return result;
     } catch (error) {
         console.log(error);
-        return {status: 400, msg: 'Houve uma falha ao processar a venda.'};
+        return {status: 400, msg: 'Houve uma falha ao processar a venda.', produtoid: 0, qtd: 0};
     } finally {
         await prisma.$disconnect();
     };
