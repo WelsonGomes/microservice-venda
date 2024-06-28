@@ -11,23 +11,35 @@ app.use(express.json());
 const port = process.env.SERVICE_PORT;
 
 app.post('/Venda', async (req: Request, res: Response) => {
-    const venda = req.body;
-    const response = await createVenda(venda);
-    console.log(response.msg)
-    return res.status(response.status).json({msg:response.msg});
+    try{
+        const venda = req.body;
+        const response = await createVenda(venda);
+        console.log(response.msg)
+        return res.status(response.status).json({msg:response.msg});
+    } catch (error){
+        return res.status(500).json({msg: 'Houve um erro no servidor.'});
+    }
 });
 
 app.delete('/Venda', async (req: Request, res: Response) => {
-    const id = req.query.id as string;
-    const response = await deleteVenda(parseInt(id), true);
-    console.log(response)
-    return res.status(response.status).json(response);
+    try{
+        const id = req.query.id as string;
+        const response = await deleteVenda(parseInt(id), true);
+        console.log(response)
+        return res.status(response.status).json(response);
+    } catch (error){
+        return res.status(500).json({msg: 'Houve um erro no servidor.'});
+    }
 });
 
 app.get('/Venda', async (req: Request, res: Response) => {
-    const id = req.query.id as string;
-    const response = await selectVenda(parseInt(id));
-    return res.status(200).json(response);
+    try{
+        const id = req.query.id as string;
+        const response = await selectVenda(parseInt(id));
+        return res.status(200).json(response);
+    } catch (error){
+        return res.status(500).json({msg: 'Houve um erro no servidor.'});
+    }
 });
 
 app.listen(port, () => {
