@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@prisma/client": "^5.16.0",
+    "axios": "^1.7.2",
     "cors": "^2.8.5",
     "decimal.js": "^10.4.3",
     "dotenv": "^16.4.5",

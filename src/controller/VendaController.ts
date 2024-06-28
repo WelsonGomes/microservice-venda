@@ -1,6 +1,7 @@
 import Decimal from 'decimal.js';
 import prisma from '../conn/Prisma';
 import { VendaDTO, reqVendaDTO } from '../model/Interface';
+import axios from 'axios';
 
 async function createVenda(venda: VendaDTO): Promise<{status: number, msg: string}> {
     try {
@@ -8,7 +9,7 @@ async function createVenda(venda: VendaDTO): Promise<{status: number, msg: strin
         const qtdaProd: Decimal = new Decimal(venda.qtdade);
         const valor = valorProd.mul(qtdaProd);
         const result = await prisma.$transaction(async (prismaTransacition) => {
-            await prismaTransacition.venda.create({ 
+            const novo = await prismaTransacition.venda.create({ 
                 data: { 
                     produtoid: venda.produtoid, 
                     qtdade: venda.qtdade, 
@@ -16,6 +17,31 @@ async function createVenda(venda: VendaDTO): Promise<{status: number, msg: strin
                     valortotal: valor
                 }
             });
+            if (!novo) {
+                console.log(novo);
+                throw new Error('Houve uma falha ao processar a venda.');
+            }
+            try {
+                const produtoResp = await axios.put("http://localhost:3001/Produto", {
+                    id: novo.produtoid,
+                    qtd: novo.qtdade,
+                    op: 'subtrair'
+                }, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json;charset=UTF-8'
+                    }
+                });
+    
+                if (!produtoResp || produtoResp.status !== 200) {
+                    throw new Error('Houve uma falha ao processar a venda.');
+                }
+    
+            } catch (axiosError) {
+                console.error('Erro ao chamar o serviço de produto:', axiosError);
+                throw new Error('Houve uma falha ao processar a venda.');
+            }
+
             return {status: 200, msg: 'Venda processada.'};
         });
         return result;
@@ -27,19 +53,47 @@ async function createVenda(venda: VendaDTO): Promise<{status: number, msg: strin
     };
 };
 
-async function deleteVenda(id: number, valor: boolean): Promise<{status: number, msg: string, produtoid: number, qtd: number}> {
+async function deleteVenda(id: number, valor: boolean): Promise<{status: number, msg: string}> {
     try {
-        const result = await prisma.$transaction(async (prismaTransacition) => {
-            const response = await prismaTransacition.venda.update({ where: { id: id }, data: { cancelada: valor} });
-            return {status: 200, msg: 'Venda cancelada.', produtoid: response.produtoid, qtd: response.qtdade};
+        const result = await prisma.$transaction(async (prismaTransaction) => {
+            const response = await prismaTransaction.venda.findUnique({ where: { id: id }});
+            if (!response) {
+                console.log(response);
+                throw new Error('Houve uma falha ao processar a venda.');
+            }
+
+            await prismaTransaction.venda.update({ where: { id: id }, data: { cancelada: valor }});
+            
+            try {
+                const produtoResp = await axios.put("http://localhost:3001/Produto", {
+                    id: response.produtoid,
+                    qtd: response.qtdade,
+                    op: 'soma'
+                }, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json;charset=UTF-8'
+                    }
+                });
+    
+                if (!produtoResp || produtoResp.status !== 200) {
+                    throw new Error('Houve uma falha ao processar a venda.');
+                }
+    
+            } catch (axiosError) {
+                console.error('Erro ao chamar o serviço de produto:', axiosError);
+                throw new Error('Houve uma falha ao processar a venda.');
+            }
+            
+            return { status: 200, msg: 'Venda cancelada.' };
         });
         return result;
     } catch (error) {
         console.log(error);
-        return {status: 400, msg: 'Houve uma falha ao processar a venda.', produtoid: 0, qtd: 0};
+        return { status: 400, msg: 'Houve uma falha ao processar a venda.' };
     } finally {
         await prisma.$disconnect();
-    };
+    }    
 };
 
 async function selectVenda(id: number): Promise<reqVendaDTO[] | reqVendaDTO> {

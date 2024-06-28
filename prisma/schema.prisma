@@ -14,4 +14,6 @@ model Venda {
   valorproduto Decimal @db.Decimal(17,2)
   valortotal Decimal @db.Decimal(17,2)
   cancelada Boolean @default(false)
+
+  @@map("tbvenda")
 }

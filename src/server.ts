@@ -20,8 +20,8 @@ app.post('/Venda', async (req: Request, res: Response) => {
 app.delete('/Venda', async (req: Request, res: Response) => {
     const id = req.query.id as string;
     const response = await deleteVenda(parseInt(id), true);
-    console.log('Venda cancelada')
-    return res.status(response.status).json({msg:response});
+    console.log(response)
+    return res.status(response.status).json(response);
 });
 
 app.get('/Venda', async (req: Request, res: Response) => {
